@@ -21,7 +21,7 @@ const server = app.listen(port, console.log("Server is running.."))
 const io = require('socket.io')(server, {
     pingTimeout: 60000,
     cors:{
-        origin: "https://echo-e.vercel.app"
+        origin: "http://localhost:3000"
     }
 })
 
@@ -54,6 +54,14 @@ io.on("connection", (socket) => {
             }
         })
     });
+
+    socket.on("userCall", ({to, from, offer}) => {
+        socket.in(to).emit("incomingCall", {from : from, offer})
+    })
+
+    socket.on("callAccepted", ({to, ans}) => {
+        socket.in(to).emit("callAccepted", {ans})
+    })
 
     socket.off("setup", () => {
         console.log("USER DISCONNECTED");

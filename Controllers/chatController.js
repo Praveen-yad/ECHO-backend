@@ -155,9 +155,7 @@ const sendReciver = async(req,res) => {
 
 const AddNewMessage = async(req, res) => {
     try{
-        await Chat.findByIdAndUpdate(req.body.chatId, {
-            newMessage:true
-        })
+        await Chat.findOneAndUpdate({_id:req.body.chatId}, {newMessage:true},{timestamps: false})
         res.status(200).send({sucess: true})
     }catch(err){
         res.status(400).send({sucess: false})
