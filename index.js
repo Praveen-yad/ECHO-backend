@@ -21,7 +21,7 @@ const server = app.listen(port, console.log("Server is running.."))
 const io = require('socket.io')(server, {
     pingTimeout: 60000,
     cors:{
-        origin: "http://localhost:3000"
+        origin: "https://echo-2i9m.onrender.com/"
     }
 })
 
