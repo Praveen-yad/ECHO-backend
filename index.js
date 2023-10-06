@@ -1,6 +1,7 @@
 const express = require("express");
 const dbConnect = require("./mongodb");
 const cors = require('cors');
+const { Socket } = require("socket.io");
  
 const port = 5000
 const app = express();
@@ -21,22 +22,21 @@ const server = app.listen(port, console.log("Server is running.."))
 const io = require('socket.io')(server, {
     pingTimeout: 60000,
     cors:{
-        origin: "https://echo-2i9m.onrender.com/"
+        origin: "http://localhost:3000"
     }
 })
 
 io.on("connection", (socket) => {
-    // console.log("connected to socket.io")
 
-    socket.on("setup", (userDate) => {
-        socket.join(userDate._id)
-        console.log(userDate._id)
+    socket.on("setup", (userData) => {
+        socket.join(userData._id)
+        console.log(userData._id)
         socket.emit("connected")
     })
 
     socket.on("join chat", (room) => {
         socket.join(room);
-        console.log("user joined room"+room)
+        console.log("user joined room" + room)
     })
 
     socket.on('typing', (room) => socket.in(room).emit("typing"))
@@ -55,13 +55,37 @@ io.on("connection", (socket) => {
         })
     });
 
-    socket.on("userCall", ({to, from, offer}) => {
-        socket.in(to).emit("incomingCall", {from : from, offer})
+    socket.on("callUser", ({ userToCall, signalData, userData }) => {
+		socket.to(userToCall).emit("callUser", { signal: signalData, from: userData });
+	});
+
+	socket.on("answerCall", ({signal, to}) => {
+		socket.to(to).emit("callAccepted", {signal: signal})
+	});
+
+    socket.on("hungUp", ({to}) => {
+        socket.to(to).emit("CallDisconnected")
+    })
+    socket.on("DeclineCall", ({to}) => {
+        socket.to(to).emit("CallDeclined")
     })
 
-    socket.on("callAccepted", ({to, ans}) => {
-        socket.in(to).emit("callAccepted", {ans})
-    })
+    // socket.on("userCall", ({to,from, offer}) => {
+    //     io.to(to).emit("incomingCall", {to: socket.id, from:from ,offer})
+    // })
+
+    // socket.on("callAccepted", ({to, ans}) => {
+    //     io.to(to).emit("callAccepted", {ans})
+    // })
+    
+    // socket.on("peerNegoNeeded", ({to,offer}) => {
+    //     io.to(to).emit("peerNegoNeeded", {to: socket.id, offer})
+
+    // })
+
+    // socket.on("peerNegoDone", ({to, ans}) => {
+    //     io.to(to).emit("peerNegoFinal", {ans})
+    // })
 
     socket.off("setup", () => {
         console.log("USER DISCONNECTED");
