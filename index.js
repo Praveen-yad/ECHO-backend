@@ -1,7 +1,6 @@
 const express = require("express");
 const dbConnect = require("./mongodb");
 const cors = require('cors');
-const { Socket } = require("socket.io");
  
 const port = 5000
 const app = express();
@@ -39,8 +38,8 @@ io.on("connection", (socket) => {
         console.log("user joined room" + room)
     })
 
-    socket.on('typing', (room) => socket.in(room).emit("typing"))
-    socket.on('stop typing', (room) => socket.in(room).emit("stop typing"))
+    socket.on('typing', (room) => socket.to(room).emit("typing"))
+    socket.on('stop typing', (room) => socket.to(room).emit("stop typing"))
 
     socket.on("new message", (newMessageReceived) => {
         let chat = newMessageReceived.chat;
@@ -55,8 +54,8 @@ io.on("connection", (socket) => {
         })
     });
 
-    socket.on("callUser", ({ userToCall, signalData, userData }) => {
-		socket.to(userToCall).emit("callUser", { signal: signalData, from: userData });
+    socket.on("callUser", ({ userToCall, signalData, userData}) => {
+		socket.to(userToCall).emit("callUser", { signal: signalData, from: userData});
 	});
 
 	socket.on("answerCall", ({signal, to}) => {
@@ -69,23 +68,6 @@ io.on("connection", (socket) => {
     socket.on("DeclineCall", ({to}) => {
         socket.to(to).emit("CallDeclined")
     })
-
-    // socket.on("userCall", ({to,from, offer}) => {
-    //     io.to(to).emit("incomingCall", {to: socket.id, from:from ,offer})
-    // })
-
-    // socket.on("callAccepted", ({to, ans}) => {
-    //     io.to(to).emit("callAccepted", {ans})
-    // })
-    
-    // socket.on("peerNegoNeeded", ({to,offer}) => {
-    //     io.to(to).emit("peerNegoNeeded", {to: socket.id, offer})
-
-    // })
-
-    // socket.on("peerNegoDone", ({to, ans}) => {
-    //     io.to(to).emit("peerNegoFinal", {ans})
-    // })
 
     socket.off("setup", () => {
         console.log("USER DISCONNECTED");

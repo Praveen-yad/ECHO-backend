@@ -172,4 +172,13 @@ const RemoveNewMessage = async(req,res) => {
     }
 }
 
-module.exports = { accessChat,fetchChats,createGroupChat,renameGroup,removeFromGroup,addToGroup,sendReciver,RemoveNewMessage,AddNewMessage}
+const deleteChat = async(req,res) => {
+    try{
+        await Chat.findOneAndDelete({_id: req.body.chatId})
+        res.status(200).send({sucess:true})
+    }catch(err){
+        res.status(400).send({sucess:false})
+    }
+}
+
+module.exports = { accessChat,fetchChats,createGroupChat,renameGroup,removeFromGroup,addToGroup,sendReciver,RemoveNewMessage,AddNewMessage, deleteChat}
